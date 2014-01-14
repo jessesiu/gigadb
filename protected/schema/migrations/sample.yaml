@@ -1,0 +1,27 @@
+---
+table: sample
+from: null
+to: bgh_1
+depends:
+  - [species, bgh_1]
+sql: |
+  CREATE TABLE sample (
+    id SERIAL NOT NULL PRIMARY KEY,
+    species_id INTEGER NOT NULL REFERENCES species(id) ON DELETE CASCADE,
+    attributes TEXT NOT NULL DEFAULT ''
+  );
+---
+table: sample
+to: thk_1
+sql: |
+  ALTER TABLE sample ALTER COLUMN attributes DROP NOT NULL;
+---
+table: sample
+to: thk_2
+sql: |
+  ALTER TABLE sample ADD COLUMN code varchar(50) NOT NULL DEFAULT 'SRS188811';
+---
+table: sample
+to: nmkl_1
+sql: |
+  ALTER TABLE sample RENAME attributes TO s_attrs;

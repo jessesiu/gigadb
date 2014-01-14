@@ -1,0 +1,40 @@
+<?php
+
+return array(
+    'params'=>array(
+        'home_url' => '@home.url@', // Where top level link goes to
+
+        'timezone'=>"@timezone@",
+
+        // Used in the contact page
+        'adminEmail'=>'@adminEmail@',
+
+        // This is used as the sender of emails
+        'app_email_name' => '@app_email_name@',
+        'app_email' => '@app_email@',
+        'email_prefix' => '@email_prefix@',
+
+        'support_email' => '@support_email@',
+        'email_prefix' => '@email_prefix@', // put at the begining of the subject line
+
+        // Notified when a new user signs up
+        'notify_email' => '@notify_email@',
+
+        // Cogini
+        'recaptcha_publickey' => '@recaptcha_publickey@',
+        'recaptcha_privatekey' => '@recaptcha_privatekey@',
+        "google_analytics_profile" => "@google_analytics_profile_1@",
+
+        // Sphinx params
+        'sphinx_servername' => '@sphinx_servername@',
+        'sphinx_port' => @sphinx_port@,
+        // MC api
+        'mc_apikey' => '@mc_apikey@',
+        'mc_listID' => '@mc_listID@',
+
+        'less_dev_mode' => @less_dev_mode@,
+
+        // Google Analytics profile
+        'google_analytics_profile' => '@google_analytics_profile_2@',
+    ),
+);

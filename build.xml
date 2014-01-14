@@ -1,0 +1,501 @@
+<project name="gigadb-cogini" default="build" basedir=".">
+    <description>
+        Build file for GigaDB
+    </description>
+    <!-- Set global properties for build -->
+    <property file="build.properties"/>
+    <property name="lib.dir" location="./lib"/>
+    <property name="backups.dir" location="./db"/>
+
+    <property name="css.dir" location="./css"/>
+    <property name="dataset.dir" location="./dataset"/>
+    <property name="files.dir" location="./files"/>
+    <property name="js.dir" location="./js"/>
+    <property name="less.dir" location="./less"/>
+    <property name="sphinx.dir" location="./sphinx"/>
+    <property name="TestGigaDB.dir" location="./TestGigaDB"/>
+    <property name="themes.dir" location="./themes"/>
+
+    <property name="protected.dir" location="./protected"/>
+    <property name="commands.dir" location="${protected.dir}/commands"/>
+    <property name="components.dir" location="${protected.dir}/components"/>
+    <property name="config.dir" location="${protected.dir}/config"/>
+    <property name="controllers.dir" location="${protected.dir}/controllers"/>
+    <property name="data.dir" location="${protected.dir}/data"/>
+    <property name="doc.dir" location="${protected.dir}/doc"/>
+    <property name="extensions.dir" location="${protected.dir}/extensions"/>
+    <property name="helpers.dir" location="${protected.dir}/helpers"/>
+    <property name="messages.dir" location="${protected.dir}/messages"/>
+    <property name="models.dir" location="${protected.dir}/models"/>
+    <property name="schema.dir" location="${protected.dir}/schema"/>
+    <property name="scripts.dir" location="${protected.dir}/scripts"/>
+    <property name="tests.dir" location="${protected.dir}/tests"/>
+    <property name="vendors.dir" location="${protected.dir}/vendors"/>
+    <property name="views.dir" location="${protected.dir}/views"/>
+
+    <property name="downloads.dir" location="./downloads"/>
+    <property name="conf.dir" location="./conf"/>
+
+    <!-- To be downloaded -->
+    <property name="images.dir" location="./images"/>
+    <property name="runtime.dir" location="${protected.dir}/runtime"/>
+
+    <property name="build.dir" location="./build"/>
+    <property name="dist.dir" location="./dist"/>
+
+    <target name="init">
+        <!-- Create time stamp -->
+        <tstamp/>
+
+        <!-- Check OS -->
+        <condition property="isMac" value="true">
+            <os family="mac" />
+        </condition>
+
+        <!-- Check for images.zip as test for downloads -->
+        <property name="images.zip" value="${downloads.dir}/images.zip"/>
+        <available file="${images.zip}" property="images.zip.present"/>
+
+        <!-- Check build dir -->
+        <available file="./${build.dir}" type="dir" property="build.found"/>
+    </target>
+
+    <target name="download" depends="init" unless="images.zip.present">
+        <mkdir dir="${downloads.dir}"/>
+        <get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCYlhuaFF0NHhxUkk" dest="${downloads.dir}/images.zip"/>
+        <!-- Sphinx indices -->
+        <mkdir dir="${downloads.dir}/sphinx"/>
+        <get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCVDRET2FsN2QzWDA" dest="${downloads.dir}/sphinx/sphinx_indices.zip"/>
+
+        <!-- /protected/config/local.php -->
+        <!--<get src="http://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCLVpqTklEYzhJRTQ" dest="${downloads.dir}/local.php"/>-->
+
+        <!-- protected/config/data -->
+        <!--<get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCMWhoemxPMldPeTQ" dest="${downloads.dir}/protected-config-data.zip"/>-->
+
+        <!-- protected/data -->
+        <!--<get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCVDBIdjRSU25ja1E" dest="${downloads.dir}/data_fresh.sql"/>-->
+
+        <!-- protected/runtime -->
+        <!-- Seems like a load of logs so probably don't need this -->
+        <!--<get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCdUUxZV9FNzVkNkU" dest="${downloads.dir}/protected-runtime.zip"/>-->
+
+    </target>
+
+    <target name="build" depends="download" unless="build.found">
+        <mkdir dir="${build.dir}"/>
+
+        <!-- Sort out folders first -->
+        <mkdir dir="${build.dir}/css"/>
+        <copy todir="${build.dir}/css">
+            <fileset dir="${css.dir}"/>
+        </copy>
+
+        <mkdir dir="${build.dir}/dataset"/>
+        <copy todir="${build.dir}/dataset">
+            <fileset dir="${dataset.dir}"/>
+        </copy>
+
+        <mkdir dir="${build.dir}/files"/>
+        <copy todir="${build.dir}/files">
+            <fileset dir="${files.dir}"/>
+        </copy>
+
+        <mkdir dir="${build.dir}/images"/>
+        <unzip src="${downloads.dir}/images.zip" dest="${build.dir}/images"/>
+
+        <mkdir dir="${build.dir}/js"/>
+        <copy todir="${build.dir}/js">
+            <fileset dir="${js.dir}"/>
+        </copy>
+
+        <mkdir dir="${build.dir}/less"/>
+        <copy todir="${build.dir}/less">
+            <fileset dir="${less.dir}"/>
+        </copy>
+
+        <mkdir dir="${build.dir}/protected"/>
+        <copy todir="${build.dir}/protected">
+            <fileset dir="${protected.dir}">
+                <exclude name="**/*db.json*"/>
+                <exclude name="**/*local.php*"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy db.json.sample into /protected/config and replace tokens-->
+        <copy file="${conf.dir}/db.json.sample" todir="${build.dir}/protected/config"/>
+        <move file="${build.dir}/protected/config/db.json.sample" tofile="${build.dir}/protected/config/db.json"
+              overwrite="true"/>
+
+        <!-- Copy local.php.sample into /protected/config and replace tokens-->
+        <copy file="${conf.dir}/local.php.sample" todir="${build.dir}/protected/config"/>
+        <move file="${build.dir}/protected/config/local.php.sample" tofile="${build.dir}/protected/config/local.php"
+              overwrite="true"/>
+        <replace file="${build.dir}/protected/config/local.php" propertyFile="./build.properties">
+            <replacefilter token="@home.url@" property="home.url"/>
+            <replacefilter token="@timezone@" property="timezone"/>
+            <replacefilter token="@adminEmail@" property="adminEmail"/>
+            <replacefilter token="@app_email_name@" property="app_email_name"/>
+            <replacefilter token="@app_email@" property="app_email"/>
+            <replacefilter token="@email_prefix@" property="email_prefix"/>
+            <replacefilter token="@support_email@" property="support_email"/>
+            <replacefilter token="@email_prefix@" property="email_prefix"/>
+            <replacefilter token="@notify_email@" property="notify_email"/>
+            <replacefilter token="@recaptcha_publickey@" property="recaptcha_publickey"/>
+            <replacefilter token="@recaptcha_privatekey@" property="recaptcha_privatekey"/>
+            <replacefilter token="@google_analytics_profile_1@" property="google_analytics_profile_1"/>
+            <replacefilter token="@sphinx_servername@" property="sphinx_servername"/>
+            <replacefilter token="@sphinx_port@" property="sphinx_port"/>
+            <replacefilter token="@mc_apikey@" property="mc_apikey"/>
+            <replacefilter token="@mc_listID@" property="mc_listID"/>
+            <replacefilter token="@less_dev_mode@" property="less_dev_mode"/>
+            <replacefilter token="@google_analytics_profile_2@" property="google_analytics_profile_2"/>
+        </replace>
+
+        <mkdir dir="${build.dir}/protected/runtime"/>
+        <mkdir dir="${build.dir}/assets"/>
+
+        <mkdir dir="${build.dir}/TestGigaDB"/>
+        <copy todir="${build.dir}/TestGigaDB">
+            <fileset dir="${TestGigaDB.dir}"/>
+        </copy>
+
+        <mkdir dir="${build.dir}/themes"/>
+        <copy todir="${build.dir}/themes">
+            <fileset dir="${themes.dir}"/>
+        </copy>
+
+        <!-- Copy single files to build -->
+        <copy file="./crontab" todir="${build.dir}"/>
+        <copy file="./favicon.ico" todir="${build.dir}"/>
+        <copy file="./index.php" todir="${build.dir}"/>
+        <copy file="./sitemap.xml" todir="${build.dir}"/>
+        <copy file="./Vagrantfile" todir="${build.dir}"/>
+    </target>
+
+    <target name="if_mac" depends="build" if="isMac">
+        <!-- If using Mac, copy over Utils.php.mac -->
+        <echo message="We are on a Mac..."/>
+        <copy file="${conf.dir}/Utils.php.mac" tofile="${build.dir}/protected/vendors/Utils.php"
+              overwrite="true"/>
+    </target>
+
+    <!-- ######################### -->
+    <!-- Local server installation -->
+    <!-- ######################### -->
+
+    <target name="build-local" depends="if_mac">
+        <!-- Copy set_env.sh into /protected/scripts and replace tokens-->
+        <copy file="${conf.dir}/set_env.sh.sample" todir="${build.dir}/protected/scripts"/>
+        <move file="${build.dir}/protected/scripts/set_env.sh.sample" tofile="${build.dir}/protected/scripts/set_env.sh"
+              overwrite="true"/>
+        <replace file="${build.dir}/protected/scripts/set_env.sh"
+                 propertyFile="./build.properties">
+            <replacefilter token="@db.name@" property="local.db.name"/>
+            <replacefilter token="@db.host@" property="local.db.host"/>
+            <replacefilter token="@db.user@" property="local.db.user"/>
+            <replacefilter token="@db.password@" property="local.db.password"/>
+        </replace>
+
+        <replace file="${build.dir}/protected/config/db.json"
+                 propertyFile="./build.properties">
+            <replacefilter token="@db.name@" property="local.db.name"/>
+            <replacefilter token="@db.host@" property="local.db.host"/>
+            <replacefilter token="@db.user@" property="local.db.user"/>
+            <replacefilter token="@db.password@" property="local.db.password"/>
+        </replace>
+
+        <!-- For Sphinx -->
+        <mkdir dir="${build.dir}/sphinx"/>
+        <copy todir="${build.dir}/sphinx">
+            <fileset dir="./sphinx"/>
+        </copy>
+        <move file="${build.dir}/sphinx/sphinx.conf.sample" tofile="${build.dir}/sphinx/sphinx.conf"
+              overwrite="true"/>
+        <replace file="${build.dir}/sphinx/sphinx.conf" propertyFile="./build.properties">
+            <replacefilter token="@type@" property="local.type"/>
+            <replacefilter token="@sql_host@" property="local.sql.host"/>
+            <replacefilter token="@sql_user@" property="local.sql.user"/>
+            <replacefilter token="@sql_pass@" property="local.sql.pass"/>
+            <replacefilter token="@sql_db@" property="local.sql.db"/>
+            <replacefilter token="@sql_port@" property="local.sql.port"/>
+            <replacefilter token="@dataset.path@" property="local.dataset.path"/>
+            <replacefilter token="@file.path@" property="local.file.path"/>
+            <replacefilter token="@manuscript.path@" property="local.manuscript.path"/>
+            <replacefilter token="@log@" property="local.log"/>
+            <replacefilter token="@query_log@" property="local.query.log"/>
+            <replacefilter token="@pid_file@" property="local.pid.file"/>
+            <replacefilter token="@binlog_path@" property="local.binlog.path"/>
+        </replace>
+        <chmod file="${build.dir}/sphinx/setup-sphinx.sh" perm="ugo+x"/>
+        <!-- Copy over index files -->
+        <unzip src="${downloads.dir}/sphinx/sphinx_indices.zip" dest="${build.dir}/protected/config/data"/>
+    </target>
+
+    <target name="install-local" depends="build-local"
+            description="Install gigadb on local filesystem">
+        <!-- Check we have write privileges -->
+        <fail message="The directory ${local.install.path} is not writable.">
+            <condition>
+                <not>
+                    <isfileselected file="${local.install.path}" >
+                    <writable/>
+                    </isfileselected>
+                </not>
+        </condition>
+        </fail>
+        <echo message="Web server folder is writable"/>
+
+        <!--Delete old web site -->
+        <exec executable="sudo" failonerror="true">
+        <arg line="rm -fr /var/www/hosts/gigadb.cogini.com/htdocs"/>
+        </exec>
+        <exec executable="sudo" failonerror="true">
+            <arg line="rm -fr /var/www/hosts/gigadb.cogini.com/logs"/>
+        </exec>
+
+        <!--<delete includeemptydirs="true">-->
+            <!--<fileset dir="${local.install.path}" includes="**/*"/>-->
+        <!--</delete>-->
+        <!--&lt;!&ndash;Delete logs in old web site &ndash;&gt;-->
+        <!--<delete includeemptydirs="true">-->
+            <!--<fileset dir="${local.install.path.logs}" includes="**/*"/>-->
+        <!--</delete>-->
+
+        <copy todir="${local.install.path}">
+            <fileset dir="${build.dir}"/>
+        </copy>
+        <mkdir dir="${local.install.path.logs}"/>
+        <mkdir dir="${local.install.path.logs}/binlog"/>
+
+        <!-- Configure write permissions for runtime and assets folders -->
+        <chmod dir="${local.install.path}/protected/runtime" perm="ugo+rw" type="dir"/>
+        <chmod dir="${local.install.path}/assets" perm="ugo+rw" type="dir"/>
+
+        <!-- Sphinx stuff -->
+        <copy file="${build.dir}/sphinx/sphinx.conf" todir="/usr/local/etc"/>
+
+        <!--<exec executable="sudo" failonerror="true">-->
+        <!--<arg line="apachectl restart"/>-->
+        <!--</exec>-->
+
+    </target>
+
+    <!-- #################### -->
+    <!-- Local database tasks -->
+    <!-- #################### -->
+
+    <target name="dropdb-local" description="Removes database files">
+        <echo message="Deleting gigadb database"/>
+        <sql driver="org.postgresql.Driver"
+             classpath="${lib.dir}/postgresql-9.2-1002.jdbc4.jar"
+             url="${local.template1.dburl}"
+             userid="${local.db.user}"
+             password="${local.db.password}"
+             autocommit="true">
+            DROP DATABASE ${local.db.name};
+        </sql>
+    </target>
+
+    <target name="createdb-local" depends="dropdb-local" description="Create local postgresql database">
+        <echo message="Creating new empty gigadb database"/>
+        <sql driver="org.postgresql.Driver"
+             classpath="${lib.dir}/postgresql-9.2-1002.jdbc4.jar"
+             url="${local.template1.dburl}"
+             userid="${local.db.user}"
+             password="${local.db.password}"
+             autocommit="true">
+            CREATE DATABASE ${local.db.name};
+        </sql>
+    </target>
+
+    <target name="restoredb-local" depends="createdb-local"
+            description="Restores gigadb from backup files">
+        <echo message="Restoring gigadb database"/>
+        <echo message="This might take some time..."/>
+        <!-- Get SQL dump of gigadb -->
+        <exec failifexecutionfails="true" failonerror="true"
+              executable="pg_restore">
+            <env key="PGPASSWORD" value="${local.db.password}"/>
+            <arg value="-i"/>
+            <arg value="-U"/>
+            <arg value="${local.db.user}"/>
+            <arg value="-h"/>
+            <arg value="${local.db.host}"/>
+            <arg value="-d"/>
+            <arg value="${local.db.name}"/>
+            <arg value="${backups.dir}/${local.backup.file}"/>
+        </exec>
+    </target>
+
+    <!-- ################################### -->
+    <!-- Local Sphinx tasks - to be finished -->
+    <!-- ################################### -->
+
+    <target name="check-index-install-path">
+        <condition property="index_found_install_path">
+            <available file="${local.install.path}/protected/config/data/dataset.spi" type="file"/>
+        </condition>
+    </target>
+
+    <target name="check-index-root" depends="check-index-install-path" unless="index_found_install_path">
+        <condition property="index_found_root">
+            <available file="./sphinx/data/dataset.spi" type="file"/>
+        </condition>
+    </target>
+
+    <target name="sphinx-local" depends="check-index-install-path" unless="index_found_install_path"
+            description="Set up Sphinx search engine on local machine">
+        <!-- Check presence of indices at protected/config/data -->
+        <!-- If present, do nothing -->
+        <!-- If not present, check presence of indices in root folder -->
+        <!-- If present, copy into protected/config/data -->
+        <!-- If not present, execute setup-sphinx.sh and copy indices into root folder -->
+        <echo message="This task might take over 20 mins to generate the Sphinx indices..."/>
+        <!-- Copy sphinx.conf to /etc/sphinx -->
+        <copy file="${build.dir}/sphinx/sphinx.conf" todir="/etc/sphinx"/>
+        <exec executable="${build.dir}/sphinx/setup-sphinx.sh"
+              failonerror="true"
+              osfamily="unix"/>
+    </target>
+
+    <!-- ############################### -->
+    <!-- Development server installation -->
+    <!-- ############################### -->
+
+    <target name="build-dev" depends="build">
+        <!-- Copy set_env.sh into /protected/scripts and replace tokens-->
+        <copy file="${conf.dir}/set_env.sh.sample" todir="${build.dir}/protected/scripts"/>
+        <move file="${build.dir}/protected/scripts/set_env.sh.sample" tofile="${build.dir}/protected/scripts/set_env.sh"
+              overwrite="true"/>
+        <replace file="${build.dir}/protected/scripts/set_env.sh"
+                 propertyFile="./build.properties">
+            <replacefilter token="@db.name@" property="dev.db.name"/>
+            <replacefilter token="@db.host@" property="dev.db.host"/>
+            <replacefilter token="@db.user@" property="dev.db.user"/>
+            <replacefilter token="@db.password@" property="dev.db.password"/>
+        </replace>
+
+        <replace file="${build.dir}/protected/config/db.json"
+                 propertyFile="./build.properties">
+            <replacefilter token="@db.name@" property="dev.db.name"/>
+            <replacefilter token="@db.host@" property="dev.db.host"/>
+            <replacefilter token="@db.user@" property="dev.db.user"/>
+            <replacefilter token="@db.password@" property="dev.db.password"/>
+        </replace>
+
+        <!-- For Sphinx -->
+        <mkdir dir="${build.dir}/sphinx"/>
+        <copy todir="${build.dir}/sphinx">
+            <fileset dir="./sphinx"/>
+        </copy>
+        <move file="${build.dir}/sphinx/sphinx.conf.sample" tofile="${build.dir}/sphinx/sphinx.conf"
+              overwrite="true"/>
+        <replace file="${build.dir}/sphinx/sphinx.conf" propertyFile="./build.properties">
+            <replacefilter token="@type@" property="dev.type"/>
+            <replacefilter token="@sql_host@" property="dev.sql.host"/>
+            <replacefilter token="@sql_user@" property="dev.sql.user"/>
+            <replacefilter token="@sql_pass@" property="dev.sql.pass"/>
+            <replacefilter token="@sql_db@" property="dev.sql.db"/>
+            <replacefilter token="@sql_port@" property="dev.sql.port"/>
+            <replacefilter token="@dataset.path@" property="dev.dataset.path"/>
+            <replacefilter token="@file.path@" property="dev.file.path"/>
+            <replacefilter token="@manuscript.path@" property="dev.manuscript.path"/>
+            <replacefilter token="@log@" property="dev.log"/>
+            <replacefilter token="@query_log@" property="dev.query.log"/>
+            <replacefilter token="@pid_file@" property="dev.pid.file"/>
+            <replacefilter token="@binlog_path@" property="dev.binlog.path"/>
+        </replace>
+        <chmod file="${build.dir}/sphinx/setup-sphinx.sh" perm="ugo+x"/>
+    </target>
+
+    <target name="install-dev" depends="build-dev"
+            description="Install GigaDB on development server">
+
+        <!-- Zip up build folder -->
+        <!--<echo message="Creating zip file"/>-->
+        <!--<mkdir dir="${dist.dir}"/>-->
+        <!--<zip destfile="${dist.dir}/gigadb.zip"-->
+             <!--basedir="${build.dir}"/>-->
+
+        <!-- Delete contents of gigadb folder on development server -->
+        <sshexec host="${dev.unix.server}"
+                 username="${dev.unix.user}"
+                 password="${dev.unix.password}"
+                 command="rm -fr ${dev.install.path}"/>
+
+        <scp todir="${dev.unix.user}:${dev.unix.password}@${dev.unix.server}:${dev.install.path}" verbose="true" sftp="true">
+            <fileset dir="${build.dir}"/>
+        </scp>
+
+        <!-- Unzip contents -->
+        <!--<sshexec host="${dev.unix.server}"-->
+                 <!--username="${dev.unix.user}"-->
+                 <!--password="${dev.unix.password}"-->
+                 <!--command="unzip -q ${dev.install.path}/gigadb.zip"/>-->
+
+        <!-- Need to create empty directories as scp task does not copy them over -->
+        <!-- Also need to make 2 folders writable by web process -->
+        <sshexec host="${dev.unix.server}"
+                 username="${dev.unix.user}"
+                 password="${dev.unix.password}"
+                 commandResource="${conf.dir}/gigadb_config.sh"/>
+    </target>
+
+    <!-- ################################# -->
+    <!-- Development server database tasks -->
+    <!-- ################################# -->
+
+    <target name="dropdb-dev" description="Removes database files">
+        <echo message="Deleting gigadb database"/>
+        <sql driver="org.postgresql.Driver"
+             classpath="${lib.dir}/postgresql-9.2-1002.jdbc4.jar"
+             url="${dev.template1.dburl}"
+             userid="${dev.db.user}"
+             password="${dev.db.password}"
+             autocommit="true">
+            DROP DATABASE ${dev.db.name};
+        </sql>
+    </target>
+
+    <target name="createdb-dev" depends="dropdb-dev" description="Create dev postgresql database">
+        <echo message="Creating new empty gigadb database"/>
+        <sql driver="org.postgresql.Driver"
+             classpath="${lib.dir}/postgresql-9.2-1002.jdbc4.jar"
+             url="${dev.template1.dburl}"
+             userid="${dev.db.user}"
+             password="${dev.db.password}"
+             autocommit="true">
+            CREATE DATABASE ${dev.db.name};
+        </sql>
+    </target>
+
+    <target name="restoredb-dev" depends="createdb-dev"
+            description="Restores gigadb from backup files">
+        <echo message="Restoring gigadb database"/>
+        <echo message="This might take some time..."/>
+        <!-- Get SQL dump of gigadb -->
+        <exec failifexecutionfails="true" failonerror="true"
+              executable="pg_restore">
+            <env key="PGPASSWORD" value="${dev.db.password}"/>
+            <arg value="-i"/>
+            <arg value="-U"/>
+            <arg value="${dev.db.user}"/>
+            <arg value="-h"/>
+            <arg value="${dev.db.host}"/>
+            <arg value="-d"/>
+            <arg value="${dev.db.name}"/>
+            <arg value="${backups.dir}/${dev.backup.file}"/>
+        </exec>
+    </target>
+
+    <target name="clean" description="clean up">
+        <!-- Delete the GigaDB build directory -->
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="purge" depends="clean"
+            description="Removes build directory and downloads">
+        <delete dir="${downloads.dir}"/>
+    </target>
+</project>
