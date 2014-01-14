@@ -30,6 +30,10 @@ class AdminLinkController extends Controller
 				'actions'=>array('admin','delete','index','view','create','update'),
 				'roles'=>array('admin'),
 			),
+                     array('allow',
+                                 'actions' => array('create1', 'delete1'),
+                                 'users' => array('@'),
+                        ),
 			array('deny',  // deny all users
 				'users'=>array('*'),
 			),
@@ -70,6 +74,109 @@ class AdminLinkController extends Controller
 		));
 	}
 
+           public function storeLink(&$model, &$id) {
+
+
+        if (isset($_SESSION['dataset_id'])) {
+            $dataset_id = $_SESSION['dataset_id'];
+
+
+            $model->dataset_id = $dataset_id;
+            if (!$model->save()) {
+                $model->addError('keyword', 'Error: Link is not stored!');
+                return false;
+            }
+
+            $id = $model->id;
+            return true;
+        }
+
+        return false;
+    }
+
+    public function actionCreate1() {
+        $model = new Link;
+
+        // Uncomment the following line if AJAX validation is needed
+        // $this->performAjaxValidation($model);
+
+
+        $model->dataset_id = 1;
+
+
+        $link_database = array();
+        //retrieve the database
+        if (!isset($_SESSION['link_database'])) {
+            $models = Prefix::model()->findAll();
+            $database = array();
+            foreach ($models as $m) {
+                $value = $m->prefix;
+                array_push($database, $value);
+            }
+            sort($database);
+            $_SESSION['link_database'] = $database;
+        }
+        $link_database = $_SESSION['link_database'];
+
+        //update 
+        if (!isset($_SESSION['links']))
+            $_SESSION['links'] = array();
+
+        $links = $_SESSION['links'];
+
+        if (isset($_POST['Link'])) {
+
+            $link = $link_database[$_POST['Link']['database']] . ":" . $_POST['Link']['acc_num'];
+
+            $is_primary = 1;
+
+            $model->attributes = $_POST['Link'];
+            $model->link = $link;
+            $model->is_primary = $is_primary;
+            $id = 0;
+            if ($this->storeLink($model, $id)) {
+                $link_type = "ext_acc_mirror";
+                if ($is_primary == 0)
+                    $link_type = "ext_acc_link";
+
+                $newItem = array('id' => $id, 'link' => $link, 'link_type' => $link_type);
+
+
+                array_push($links, $newItem);
+
+                $_SESSION['links'] = $links;
+                $vars = array('links');
+                Dataset::storeSession($vars);
+                $model = new Link;
+            }
+        }
+
+        $link_model = new CArrayDataProvider($links);
+
+        $this->render('create1', array(
+            'model' => $model,
+            'link_model' => $link_model,
+            'link_database' => $link_database
+        ));
+    }
+    
+        public function actionDelete1($id) {
+        if (isset($_SESSION['links'])) {
+            $info = $_SESSION['links'];
+            foreach ($info as $key => $value) {
+                if ($value['id'] == $id) {
+                    unset($info[$key]);
+                    $_SESSION['links'] = $info;
+                    $vars = array('links');
+                    Dataset::storeSession($vars);
+                    $condition = 'id=' . $id;
+                    Link::model()->deleteAll($condition);
+
+                    $this->redirect("/adminLink/create1");
+                }
+            }
+        }
+    }
 	/**
 	 * Updates a particular model.
 	 * If update is successful, the browser will be redirected to the 'view' page.

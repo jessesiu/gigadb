@@ -24,6 +24,8 @@ class DatasetAuthor extends CActiveRecord
 
     public $orcid_search;
     public $rank_search;
+    public $author_name;
+    public $rank;
 
 	public static function model($className=__CLASS__)
 	{
@@ -46,7 +48,7 @@ class DatasetAuthor extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('dataset_id, author_id', 'required'),
+			array('dataset_id ,rank,author_name', 'required'),
 			array('dataset_id, author_id, rank', 'numerical', 'integerOnly'=>true),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
@@ -78,9 +80,10 @@ class DatasetAuthor extends CActiveRecord
 			'author_id' => 'Author ID',
 			'doi_search' => 'DOI',
 			'author_name_search' => 'Author Name',
-			'rank'=>'Author Order',
-            'orcid_search' => 'ORCID' ,
-            'rank_search' => 'Rank',
+			'rank'=>'Order',
+                        'orcid_search' => 'ORCID' ,
+                        'rank_search' => 'Rank',
+                        'aurhor_name' =>'Name',
 		);
 	}
 

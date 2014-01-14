@@ -1,93 +1,153 @@
 <h2>Administration Page</h2>
 <div class="clear"></div>
 <div class="row">
-	<div class="span8 offset2">
-		<div class="form well" style="text-align:center">
-			<div class="row">
-				<a class="btn-green" href="/news/admin">Manage News Item</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/user/admin">Manage Users</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/rssMessage/admin">Manage RSS Messages</a>
-			</div>
+    <div class="span8 offset2">
+        <div class="form well">
+            <table class="admin"> 
+                <tr>
+                    <td style="vertical-align: top;">    
 
-			<div class="clear"></div>
-			<br /><br />
-			<div class="row">
-				<a class="btn-green" href="/dataset/create">Create Dataset</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/dataset/admin">Manage Datasets</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminDatasetAuthor/admin">Manage Authors belong to Datasets</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminDatasetProject/admin">Manage Projects belong to Datasets</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminDatasetSample/admin">Manage Samples belong to Datasets</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminProject/admin">Manage Projects</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminPublisher/admin">Manage Publishers</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminAuthor/admin">Manage Authors</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminDatasetType/admin">Manage Dataset Types</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminFile/admin">Manage Files</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminLink/admin">Manage Links</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminExternalLink/admin">Manage External Links</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminManuscript/admin">Manage Manuscript</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminRelation/admin">Manage Relation</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminSample/admin">Manage Sample</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminSpecies/admin">Manage Species</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminFileFormat/admin">Manage File Formats</a>
-			</div>
-			<div class="clear"></div>
-			<div class="row">
-				<a class="btn-green" href="/adminFileType/admin">Manage File Types</a>
-			</div>
-		</div>
-	</div>
+                        <div class="form well height1">
+
+                            <a class="btn-green left2" title="Access all DOIs to update/release" href="/dataset/admin">Datasets</a>
+
+                            <div class="clear"></div>
+
+                            <a class="btn-green left2" title="Manage authors of datasets" href="/adminDatasetAuthor/admin">Dataset:Authors</a>
+
+
+                            <div class="clear"></div>
+
+                            <a class="btn-green left2" title="Manage sample:DOI associations" href="/adminDatasetSample/admin">Dataset:Samples</a>
+
+                            <div class="clear"></div>
+
+                            <a class="btn-green left2" title="Add/update all Files and manage their attributes" tilte="Add/update all Files and manage their attributes" href="/adminFile/admin">Dataset:Files</a>
+
+
+                            <div class="clear"></div>
+
+                            <a class="btn-green left2" title="Manage links from datasets to external project pages" href="/adminDatasetProject/admin">Dataset:Project links</a>
+
+                            <div class="clear"></div>
+
+
+                            <a class="btn-green left2" title="List of external accessions for all DOIs" href="/adminLink/admin">Dataset:Links</a>
+
+                            <div class="clear"></div>
+
+                            <a class="btn-green left2" title="Manage DOI:DOI relationships" href="/adminRelation/admin">Dataset:Relations</a>
+
+
+                            <div class="clear"></div>
+
+
+
+<!--                            <a class="btn-green left2" title="Manualy create a new dataset via web-form" href="/dataset/create">Create Dataset</a>
+
+-->
+
+
+
+                        </div>
+
+                    </td>
+                    <td style="vertical-align: top;">
+                        <div class="form well height1">
+
+                            <a class="btn-green left2" href="/adminManuscript/admin"  title="Add/update links to manuscriptions citing our DOIs" tilte="Add/update links to manuscriptions citing our DOIs" >Dataset:Manuscript</a>
+
+                            <div class="clear"></div>
+
+
+
+                            <a class="btn-green left2" title=" List all authors cited in GigaDB, update ORCID for authors" href="/adminAuthor/admin">Authors</a>
+
+                            <div class="clear"></div>
+
+                            <a class="btn-green left2" title="Access all Samples list and update sample details" href="/adminSample/admin">Samples</a>
+
+
+                            <div class="clear"></div>
+
+
+                            <a class="btn-green left2" title="Add/update all Species and manage their attributes" href="/adminSpecies/admin">Species</a>
+
+
+                            <div class="clear"></div>
+
+
+                            <a class="btn-green left2" title="Add/update list of external projects linked to from datasets" href="/adminProject/admin">Projects</a>
+
+
+                            <div class="clear"></div>
+
+
+                            <a class="btn-green left2" title="Add/update links to genome browsers and related links" href="/adminExternalLink/admin">External Links</a>
+
+
+                            <div class="clear"></div>
+
+                            <a class="btn-green left2" title="Add/update prefixes of links supported by GigaDB" href="/adminLinkPrefix/admin">Link Prefixes</a>
+
+
+                            <div class="clear"></div>
+
+                        </div>
+
+                    </td>
+                    <td style="vertical-align: top;">
+
+
+                        <div class="form well height1">
+
+                            <a class="btn-green left2" title="Add/update types of datasets supported by GigaDB" href="/adminDatasetType/admin">Dataset Types</a>
+
+
+                            <div class="clear"></div>
+
+
+                            <a class="btn-green left2" title="Add/update types of files supported by GigaDB" href="/adminFileType/admin">File Types</a>
+
+
+                            <div class="clear"></div>
+
+
+
+
+                            <a class="btn-green left2" title="Add/update formats of files supported by GigaDB" href="/adminFileFormat/admin">File Formats</a>
+
+                            <div class="clear"></div>
+
+
+
+                            <a class="btn-green left2" title="Manage GigaDB user accounts" href="/user/admin">Users</a>
+
+                            <div class="clear"></div>
+
+
+
+
+                            <a class="btn-green left2" title="Manage GigaDB news items to show on home page" href="/news/admin" >News Items</a>
+
+                            <div class="clear"></div>
+
+
+
+
+                            <a class="btn-green left2" title="manage RSS feed items" href="/rssMessage/admin">RSS Messages</a>
+
+                            <div class="clear"></div>
+                            <a class="btn-green left2" title="Add/update list of publishers" href="/adminPublisher/admin">Publishers</a>
+
+
+
+
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
 </div>

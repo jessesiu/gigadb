@@ -87,7 +87,7 @@ class Dataset extends MyActiveRecord
             array('identifier, excelfile_md5', 'length', 'max'=>32),
             array('title', 'length', 'max'=>300),
             array('upload_status', 'length', 'max'=>45),
-            array('ftp_site', 'length', 'max'=>100),
+            //array('ftp_site', 'length', 'max'=>100),
             array('excelfile', 'length', 'max'=>50),
             array('description, publication_date, modification_date, image_id', 'safe'),
             // The following rule is used by search().
@@ -107,7 +107,7 @@ class Dataset extends MyActiveRecord
         return array(
                         'authors' => array(self::MANY_MANY, 'Author', 'dataset_author(dataset_id,author_id)', 'order'=>'authors.rank ASC', ),
             'projects' => array(self::MANY_MANY, 'Project', 'dataset_project(dataset_id,project_id)'),
-            'submitter' => array(self::BELONGS_TO, 'GigadbUser', 'submitter_id'),
+            'submitter' => array(self::BELONGS_TO, 'User', 'submitter_id'),
             'image' => array(self::BELONGS_TO, 'Images', 'image_id'),
             'samples' => array(self::MANY_MANY, 'Sample', 'dataset_sample(dataset_id,sample_id)'),
             'externalLinks' => array(self::HAS_MANY, 'ExternalLink', 'dataset_id'),
@@ -120,6 +120,16 @@ class Dataset extends MyActiveRecord
         );
     }
 
+    
+      public static function clearDatasetSession(){
+      $vars = array('dataset', 'images', 'authors', 'projects',
+            'links', 'externalLinks', 'relations', 'samples','dataset_id','identifier','filecount',
+          'link_database','isOld');
+        foreach ($vars as $var) {
+            unset($_SESSION[$var]);
+            //    $_SESSION[$var] = CJSON::decode($dataset_session->$var);
+        }   
+    }
     /**
      * @return array customized attribute labels (name=>label)
      */
@@ -298,6 +308,29 @@ class Dataset extends MyActiveRecord
                 $this->commonNames=$this->commonNames." ".$value->species->common_name;
             }
         }
+    }
+    
+        static public function storeSession($vars) {
+
+        if (isset($_SESSION['identifier']))
+            $identifier = $_SESSION['identifier'];
+        else
+            return false;
+        $dataset_session = DatasetSession::model()->findByAttributes(array('identifier' => $identifier));
+        if ($dataset_session == NULL)
+            $dataset_session = new DatasetSession;
+
+        foreach ($vars as $var) {
+            if (isset($_SESSION[$var])) {
+                $db_var = CJSON::encode($_SESSION[$var]);
+                $dataset_session->$var = $db_var;
+            }
+        }
+        $dataset_session->identifier = $identifier;
+
+        if ($dataset_session->save())
+            return true;
+        return false;
     }
 
     public function getDatasetTypes(){

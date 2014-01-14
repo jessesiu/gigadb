@@ -30,6 +30,10 @@ class AdminExternalLinkController extends Controller
 				'actions'=>array('admin','delete','index','view','create','update'),
 				'roles'=>array('admin'),
 			),
+                         array('allow',
+                                 'actions' => array('create1', 'delete1','autocomplete'),
+                                 'users' => array('@'),
+            ),
 			array('deny',  // deny all users
 				'users'=>array('*'),
 			),
@@ -69,6 +73,148 @@ class AdminExternalLinkController extends Controller
 			'model'=>$model,
 		));
 	}
+        
+         public function actionDelete1($id) {
+        if (isset($_SESSION['externalLinks'])) {
+            $info = $_SESSION['externalLinks'];
+            foreach ($info as $key => $value) {
+                if ($value['id'] == $id) {
+                    unset($info[$key]);
+                    $_SESSION['externalLinks'] = $info;
+                    $vars = array('externelLinks');
+                    Dataset::storeSession($vars);
+                    $condition = 'id=' . $id;
+                    ExternalLink::model()->deleteAll($condition);
+                    $this->redirect("/adminExternalLink/create1");
+                }
+            }
+        }
+    }
+
+    public function storeExternalLink(&$model, &$id) {
+
+
+        if (isset($_SESSION['dataset_id'])) {
+            $dataset_id = $_SESSION['dataset_id'];
+
+            $model->dataset_id = $dataset_id;
+            if (!$model->save()) {
+                $model->addError('error', 'Error: ExternalLink is not stored!');
+                return false;
+            }
+
+            $id = $model->id;
+            return true;
+        }
+        return false;
+    }
+
+    public function actionCreate1() {
+        $model = new ExternalLink;
+
+        // Uncomment the following line if AJAX validation is needed
+        // $this->performAjaxValidation($model);
+
+        $model->dataset_id = 1;
+
+        //update 
+        if (!isset($_SESSION['externalLinks']))
+            $_SESSION['externalLinks'] = array();
+
+        $externalLinks = $_SESSION['externalLinks'];
+
+
+        if (isset($_POST['ExternalLink'])) {
+            //store the information in session 
+//            if (!isset($_SESSION['externalLink_id']))
+//                $_SESSION['externalLink_id'] = 0;
+//            $id = $_SESSION['externalLink_id'];
+//            $_SESSION['externalLink_id'] += 1;
+
+
+
+            $url = $_POST['ExternalLink']['url'];
+            if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $url)) {
+                $model->addError('error', 'Error: The Url is not valid!');
+            } else {
+
+                //$model->
+                $type_id = 2;
+
+                $model->url = $url;
+                $model->external_link_type_id = $type_id;
+                $id = 0;
+                if ($this->storeExternalLink($model, $id)) {
+                    $type_info = ExternalLinkType::model()->findByAttributes(array('id' => $type_id))->name;
+
+                    $newItem = array('id' => $id, 'url' => $url, 'type_info' => $type_info, 'type_id' => $type_id);
+
+
+                    array_push($externalLinks, $newItem);
+
+                    $_SESSION['externalLinks'] = $externalLinks;
+                    $vars = array('externalLinks');
+                    Dataset::storeSession($vars);
+                    $model = new ExternalLink;
+                }
+            }
+        }
+
+
+        $externalLink_model = new CArrayDataProvider($externalLinks);
+
+
+        $this->render('create1', array(
+            'model' => $model,
+            'externalLink_model' => $externalLink_model
+        ));
+    }
+
+      public function actionAutocomplete() {
+        $res = array();
+        $result = array();
+
+        if (isset($_GET['term'])) {
+            $term = $_GET['term'];
+            $connection = Yii::app()->db;
+            if (is_numeric($term)) {
+                $sql = "select tax_id,common_name,scientific_name from species where cast(tax_id as text) like :name";
+                $command = Yii::app()->db->createCommand($sql);
+                $command->bindValue(":name", $term . '%', PDO::PARAM_STR);
+                $res = $command->queryAll();
+            } else {
+
+                $sql = "select tax_id , common_name ,scientific_name from
+                    species where common_name ilike :name or scientific_name ilike :name
+                    order by length(common_name)";
+                $command = Yii::app()->db->createCommand($sql);
+                $command->bindValue(":name", '%' . $_GET['term'] . '%', PDO::PARAM_STR);
+                $res = $command->queryAll();
+
+            }
+
+            if (!empty($res)) {
+                foreach ($res as $mres) {
+                    $name = $mres['tax_id'] . ":";
+                    $has_common_name = false;
+                    if ($mres['common_name'] != null) {
+                        $has_common_name = true;
+                        $name.= $mres['common_name'];
+                    }
+
+                    if ($mres['scientific_name'] != null) {
+                        if ($has_common_name)
+                            $name.=",";
+                        $name.= $mres['scientific_name'];
+                    }
+
+                    $result[] = $name;
+                }
+            }
+            echo CJSON::encode($result);
+            Yii::app()->end();
+        }
+    }
 
 	/**
 	 * Updates a particular model.

@@ -30,6 +30,10 @@ class AdminDatasetProjectController extends Controller
 				'actions'=>array('admin','delete','index','view','create','update'),
 				'roles'=>array('admin'),
 			),
+                        array('allow',
+                                'actions' => array('create1', 'delete1'),
+                                 'users' => array('@'),
+                        ),
 			array('deny',  // deny all users
 				'users'=>array('*'),
 			),
@@ -69,6 +73,54 @@ class AdminDatasetProjectController extends Controller
 			'model'=>$model,
 		));
 	}
+        
+         public function actionCreate1() {
+        $model = new DatasetProject;
+
+        // Uncomment the following line if AJAX validation is needed
+        // $this->performAjaxValidation($model);
+
+        $model->dataset_id = 1;
+
+        //update 
+        if (!isset($_SESSION['projects']))
+            $_SESSION['projects'] = array();
+
+        $projects = $_SESSION['projects'];
+
+        if (isset($_POST['DatasetProject'])) {
+
+            $project_id = $_POST['DatasetProject']['project_id'];
+
+            $model->project_id = $project_id;
+            $id = 0;
+            if ($this->storeProject($model, $id)) {
+
+                $name = Project::model()->findByAttributes(array('id' => $project_id))->name;
+
+                $newItem = array('id' => $id, 'name' => $name);
+
+
+                array_push($projects, $newItem);
+
+                $_SESSION['projects'] = $projects;
+                
+                   $vars = array('projects');
+                   Dataset::storeSession($vars);
+                $model = new DatasetProject;
+                
+            }
+        }
+
+
+        $project_model = new CArrayDataProvider($projects);
+
+        $this->render('create1', array(
+            'model' => $model,
+            'project_model' => $project_model,
+        ));
+    }
+
 
 	/**
 	 * Updates a particular model.
@@ -113,6 +165,24 @@ class AdminDatasetProjectController extends Controller
 		else
 			throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
 	}
+        
+         public function actionDelete1($id) {
+        if (isset($_SESSION['projects'])) {
+            $info = $_SESSION['projects'];
+            foreach ($info as $key => $value) {
+                if ($value['id'] == $id) {
+                    unset($info[$key]);
+                    $_SESSION['projects'] = $info;
+                    
+                    $vars = array('projects');
+                    Dataset::storeSession($vars);
+                     $condition = "id=" . $id;
+                     DatasetProject::model()->deleteAll($condition);
+                    $this->redirect("/adminDatasetProject/create1");
+                }
+            }
+        }
+    }
 
 	/**
 	 * Lists all models.
@@ -139,6 +209,24 @@ class AdminDatasetProjectController extends Controller
 			'model'=>$model,
 		));
 	}
+        
+          public function storeProject(&$model, &$id) {
+
+
+        if (isset($_SESSION['dataset_id'])) {
+            $dataset_id = $_SESSION['dataset_id'];
+
+            $model->dataset_id = $dataset_id;
+            if (!$model->save()) {
+                $model->addError("error", "save error");
+                return false;
+            }
+         
+            $id = $model->id;
+        }
+
+        return true;
+    }
 
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.

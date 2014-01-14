@@ -1,7 +1,7 @@
 
 <h1>Manage Files</h1>
 
-<a href="/adminFile/create" class="btn">Create New File</a>
+<a href="/adminFile/create" class="btn">Create New File</a>&nbsp;&nbsp;<a href="/adminFile/linkFolder" class="btn">Link Temp File Folder</a>
 
 <?php $this->widget('zii.widgets.grid.CGridView', array(
 	'id'=>'file-grid',

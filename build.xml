@@ -62,7 +62,7 @@
 
     <target name="download" depends="init" unless="images.zip.present">
         <mkdir dir="${downloads.dir}"/>
-        <get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCYlhuaFF0NHhxUkk" dest="${downloads.dir}/images.zip"/>
+        <!--<get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCYlhuaFF0NHhxUkk" dest="${downloads.dir}/images.zip"/>-->
         <!-- Sphinx indices -->
         <mkdir dir="${downloads.dir}/sphinx"/>
         <get src="https://drive.google.com/a/gigasciencejournal.com/uc?id=0BwkLeOIewSZCVDRET2FsN2QzWDA" dest="${downloads.dir}/sphinx/sphinx_indices.zip"/>
@@ -102,7 +102,7 @@
         </copy>
 
         <mkdir dir="${build.dir}/images"/>
-        <unzip src="${downloads.dir}/images.zip" dest="${build.dir}/images"/>
+        <!-- <unzip src="${downloads.dir}/images.zip" dest="${build.dir}/images"/> -->
 
         <mkdir dir="${build.dir}/js"/>
         <copy todir="${build.dir}/js">

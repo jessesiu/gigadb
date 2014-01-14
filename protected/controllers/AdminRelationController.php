@@ -30,6 +30,10 @@ class AdminRelationController extends Controller
 				'actions'=>array('admin','delete','index','view','create','update'),
 				'roles'=>array('admin'),
 			),
+                          array('allow',
+                                  'actions' => array('create1', 'delete1'),
+                                  'users' => array('@'),
+                        ),
 			array('deny',  // deny all users
 				'users'=>array('*'),
 			),
@@ -69,6 +73,86 @@ class AdminRelationController extends Controller
 			'model'=>$model,
 		));
 	}
+        
+         public function storeRelation(&$model, &$id) {
+
+
+        if (isset($_SESSION['dataset_id'])) {
+            $dataset_id = $_SESSION['dataset_id'];
+
+            $model->dataset_id = $dataset_id;
+            if (!$model->save()) {
+                $model->addError('error', 'Relation is not stored!');
+                return false;
+            }
+
+            $id = $model->id;
+            return true;
+        }
+        return false;
+    }
+
+    public function actionCreate1() {
+        $model = new Relation;
+
+        // Uncomment the following line if AJAX validation is needed
+        // $this->performAjaxValidation($model);
+
+
+        $model->dataset_id = 1;
+        //$model->re
+        //update 
+        if (!isset($_SESSION['relations']))
+            $_SESSION['relations'] = array();
+
+        $relations = $_SESSION['relations'];
+
+        $relation_type = array("IsNewVersionOf",
+            "IsSupplentedBy", "IsSupplementedTo",
+            "Compiles", "IsCompiledBy"
+        );
+
+        if (isset($_POST['Relation'])) {
+            //store the information in session 
+//            if (!isset($_SESSION['relation_id']))
+//                $_SESSION['relation_id'] = 0;
+//            $id = $_SESSION['relation_id'];
+//            $_SESSION['relation_id'] += 1;
+
+
+
+            $related_doi = $_POST['Relation']['related_doi'];
+            $relationship = $relation_type[$_POST['Relation']['relationship']];
+
+            $model->related_doi = $related_doi;
+            $model->relationship = $relationship;
+
+            $id = 0;
+            if ($this->storeRelation($model, $id)) {
+                $newItem = array('id' => $id, 'related_doi' => $related_doi, 'relationship' => $relationship);
+
+
+                array_push($relations, $newItem);
+
+                $_SESSION['relations'] = $relations;
+
+                $vars = array('relations');
+                Dataset::storeSession($vars);
+                $model = new Relation;
+            }
+        }
+
+
+        $relation_model = new CArrayDataProvider($relations);
+
+
+        $this->render('create1', array(
+            'model' => $model,
+            'relation_model' => $relation_model,
+            'relation_type' => $relation_type
+        ));
+    }
+
 
 	/**
 	 * Updates a particular model.
@@ -113,6 +197,25 @@ class AdminRelationController extends Controller
 		else
 			throw new CHttpException(400,'Invalid request. Please do not repeat this request again.');
 	}
+        
+        
+          public function actionDelete1($id) {
+        if (isset($_SESSION['relations'])) {
+            $info = $_SESSION['relations'];
+            foreach ($info as $key => $value) {
+                if ($value['id'] == $id) {
+                    unset($info[$key]);
+                    $_SESSION['relations'] = $info;
+                    $vars = array('relations');
+                    Dataset::storeSession($vars);
+                    $condition = 'id=' . $id;
+                    Relation::model()->deleteAll($condition);
+                    $this->redirect("/adminRelation/create1");
+                }
+            }
+        }
+    }
+
 
 	/**
 	 * Lists all models.

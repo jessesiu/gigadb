@@ -30,6 +30,7 @@ class AdminSampleController extends Controller
 				'actions'=>array('admin','delete','index','view','create','update'),
 				'roles'=>array('admin'),
 			),
+                        array('allow', 'actions' => array('create1', 'choose'), 'users' => array('@')),
 			array('deny',  // deny all users
 				'users'=>array('*'),
 			),
@@ -69,6 +70,110 @@ class AdminSampleController extends Controller
 			'model'=>$model,
 		));
 	}
+         
+        
+        public function actionCreate1() {
+            $model = new Sample;
+
+// Uncomment the following line if AJAX validation is needed
+// $this->performAjaxValidation($model);
+
+              if (isset($_POST['Sample'])) {
+            $model->attributes = $_POST['Sample'];
+            if ($model->save())
+                $this->redirect('/adminDatasetSample/create1');
+        }
+
+        $this->render('create1', array(
+            'model' => $model,
+        ));
+    }
+     public function storeDataset() {
+        if (isset($_SESSION['dataset']) && isset($_SESSION['images'])) {
+            $dataset = new Dataset;
+            $dataset->image = new Images;
+            $result = Dataset::model()->findAllBySql("select identifier from dataset order by identifier desc limit 1;");
+            $max_doi = $result[0]->identifier;
+
+            $identifier = $max_doi + 1;
+
+            $dataset_id = 0;
+
+            $dataset->attributes = $_SESSION['dataset'];
+            $dataset->image->attributes = $_SESSION['images'];
+
+            $dataset->identifier = $identifier;
+
+            $dataset->dataset_size = 0;
+            $dataset->ftp_site = "";
+            if ($dataset->publication_date == "")
+                $dataset->publication_date = null;
+            if ($dataset->modification_date == "")
+                $dataset->modification_date = null;
+
+
+            if ($dataset->image->validate('update') && $dataset->validate('update') && $dataset->image->save()) {
+                // save image
+                $dataset->image_id = $dataset->image->id;
+
+                if ($dataset->save()) {
+                    $dataset_id = $dataset->id;
+                    // link datatypes
+                    if (isset($_SESSION['datasettypes'])) {
+                        $datasettypes = $_SESSION['datasettypes'];
+                        foreach ($datasettypes as $id => $datasettype) {
+                            $newDatasetTypeRelationship = new DatasetType;
+                            $newDatasetTypeRelationship->dataset_id = $dataset->id;
+                            $newDatasetTypeRelationship->type_id = $id;
+                            $newDatasetTypeRelationship->save();
+                        }
+                    }
+                }
+            }
+            return array($dataset_id, $identifier);
+        }
+    }
+
+    public function actionChoose() {
+        $model = new Sample('search');
+        $model->unsetAttributes();  // clear any default values
+        if (isset($_GET['samples'])) {
+
+            $result = $this->storeDataset();
+            $dataset_id = $result[0];
+
+            $samples_id = $_GET['samples'];
+            $samples_array = explode(",", $samples_id);
+
+
+            foreach ($samples_array as $key => $value) {
+                $datasetSample = new DatasetSample;
+                $datasetSample->dataset_id = $dataset_id;
+                $datasetSample->sample_id = $value;
+                if ($datasetSample->save()) {
+                    
+                }
+            }
+
+            $this->redirect(array('/dataset/' . $result[1]));
+        }
+
+
+//        if (isset($_POST['DatasetSample'])) {
+//            $model->attributes = $_POST['DatasetSample'];
+//            if ($model->save())
+//                $this->redirect(array('view', 'id' => $model->id));
+//        }
+
+        if (isset($_GET['Sample']))
+            $model->attributes = $_GET['Sample'];
+
+
+//$model->getPagination()->pageSize = $model->count();
+        $this->render('choose', array(
+            'model' => $model,
+        ));
+    }
 
 	/**
 	 * Updates a particular model.
