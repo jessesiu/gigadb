@@ -21,20 +21,20 @@ return array(
         'notify_email' => 'database@gigasciencejournal.com',
 
         // Cogini
-        'recaptcha_publickey' => '6LdkzgsAAAAAAGFJ5GdJyXf4JvFqKJe5N0-F3IRt',
-        'recaptcha_privatekey' => '6LdkzgsAAAAAAD6w-JyWXLfN1260aeRNl33I-JH9',
-        "google_analytics_profile" => "UA-7881029-2",
+        'recaptcha_publickey' => '',
+        'recaptcha_privatekey' => '',
+        "google_analytics_profile" => "",
 
         // Sphinx params
         'sphinx_servername' => 'localhost',
         'sphinx_port' => 9312,
         // MC api
-        'mc_apikey' => 'a6f0c4189a9407a2758ad9f53f22dc67-us5',
-        'mc_listID' => '4be098275c',
+        'mc_apikey' => '',
+        'mc_listID' => '',
 
         'less_dev_mode' => false,
 
         // Google Analytics profile
-        'google_analytics_profile' => 'UA-34394032-1',
+        'google_analytics_profile' => '',
     ),
 );
